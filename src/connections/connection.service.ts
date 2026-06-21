@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { ConnectionStatus, Prisma, Provider, ProviderConnection } from '@prisma/client';
+import { Prisma, ProviderConnection } from '@prisma/client';
+import { ConnectionStatus, Provider } from '../domain/enums';
 import { CryptoService } from '../common/crypto.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { TokenSet } from '../providers/provider.interface';
@@ -22,7 +23,8 @@ export class ConnectionService {
       provider,
       status: ConnectionStatus.ACTIVE,
       externalUserId: tokens.externalUserId,
-      scopes: tokens.scopes ?? [],
+      // Scalar lists aren't portable to SQLite — store scopes as a JSON string.
+      scopes: JSON.stringify(tokens.scopes ?? []),
       accessToken: tokens.accessToken ? this.crypto.encrypt(tokens.accessToken) : null,
       refreshToken: tokens.refreshToken ? this.crypto.encrypt(tokens.refreshToken) : null,
       tokenExpiresAt: tokens.expiresAt ?? null,

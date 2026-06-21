@@ -1,4 +1,4 @@
-import { Intensity } from '@prisma/client';
+import { Intensity } from '../domain/enums';
 import { estimateDurationFromDistance, estimateLoad } from './load-estimate';
 import { WorkoutStep } from './workout-step.types';
 

@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Prisma, Provider } from '@prisma/client';
+import { Provider } from '../domain/enums';
 import { CanonicalBatch } from '../canonical/canonical.types';
 import { utcMidnight } from '../common/time';
 import { PrismaService } from '../prisma/prisma.service';
@@ -39,7 +39,7 @@ export class IngestionService {
           avgHrvRmssd: s.avgHrvRmssd,
           respiratoryRate: s.respiratoryRate,
           sleepScore: s.sleepScore,
-          raw: s.raw as Prisma.InputJsonValue,
+          raw: JSON.stringify(s.raw),
         },
         update: {
           start: s.start,
@@ -55,7 +55,7 @@ export class IngestionService {
           avgHrvRmssd: s.avgHrvRmssd,
           respiratoryRate: s.respiratoryRate,
           sleepScore: s.sleepScore,
-          raw: s.raw as Prisma.InputJsonValue,
+          raw: JSON.stringify(s.raw),
         },
       });
       count++;
@@ -75,7 +75,7 @@ export class IngestionService {
           spo2Pct: r.spo2Pct,
           skinTempCelsius: r.skinTempCelsius,
           respiratoryRate: r.respiratoryRate,
-          raw: r.raw as Prisma.InputJsonValue,
+          raw: JSON.stringify(r.raw),
         },
         update: {
           date: r.date,
@@ -85,7 +85,7 @@ export class IngestionService {
           spo2Pct: r.spo2Pct,
           skinTempCelsius: r.skinTempCelsius,
           respiratoryRate: r.respiratoryRate,
-          raw: r.raw as Prisma.InputJsonValue,
+          raw: JSON.stringify(r.raw),
         },
       });
       count++;
@@ -108,7 +108,7 @@ export class IngestionService {
           distanceMeters: w.distanceMeters,
           strain: w.strain,
           load: w.load,
-          raw: w.raw as Prisma.InputJsonValue,
+          raw: JSON.stringify(w.raw),
         },
         update: {
           sportType: w.sportType,
@@ -121,7 +121,7 @@ export class IngestionService {
           distanceMeters: w.distanceMeters,
           strain: w.strain,
           load: w.load,
-          raw: w.raw as Prisma.InputJsonValue,
+          raw: JSON.stringify(w.raw),
         },
       });
       count++;
@@ -139,7 +139,7 @@ export class IngestionService {
           totalCalories: d.totalCalories,
           restingHeartRate: d.restingHeartRate,
           avgStressLevel: d.avgStressLevel,
-          raw: (d.raw ?? undefined) as Prisma.InputJsonValue,
+          raw: d.raw != null ? JSON.stringify(d.raw) : undefined,
         },
         update: {
           steps: d.steps,

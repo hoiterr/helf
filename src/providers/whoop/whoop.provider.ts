@@ -1,6 +1,6 @@
 import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Provider } from '@prisma/client';
+import { Provider } from '../../domain/enums';
 import axios, { AxiosInstance } from 'axios';
 import { CanonicalBatch, emptyBatch } from '../../canonical/canonical.types';
 import { WhoopConfig } from '../../config/configuration';

@@ -1,4 +1,4 @@
-import { Provider } from '@prisma/client';
+import { Provider } from '../domain/enums';
 import { CanonicalBatch } from '../canonical/canonical.types';
 
 export interface TokenSet {

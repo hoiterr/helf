@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Provider } from '@prisma/client';
+import { Provider } from '../domain/enums';
 import { HealthProvider } from './provider.interface';
 import { WhoopProvider } from './whoop/whoop.provider';
 

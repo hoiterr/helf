@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { ConnectionStatus, Provider, ProviderConnection } from '@prisma/client';
+import { ProviderConnection } from '@prisma/client';
+import { ConnectionStatus, Provider } from '../domain/enums';
 import { daysAgo } from '../common/time';
 import { ConnectionService } from '../connections/connection.service';
 import { IngestionService } from '../ingestion/ingestion.service';
@@ -29,12 +30,13 @@ export class SyncService {
     });
     if (conn.status === ConnectionStatus.REVOKED) return;
 
-    const provider = this.registry.get(conn.provider);
+    const providerName = conn.provider as Provider;
+    const provider = this.registry.get(providerName);
     const accessToken = await this.ensureValidToken(conn);
     const sinceDate = since ?? conn.lastSyncedAt ?? daysAgo(INITIAL_BACKFILL_DAYS);
 
     const batch = await provider.fetchSince(accessToken, sinceDate);
-    await this.ingestion.persist(conn.userId, conn.provider, batch);
+    await this.ingestion.persist(conn.userId, providerName, batch);
     await this.connections.touchSynced(conn.id, batch.externalUserId);
   }
 
@@ -81,9 +83,13 @@ export class SyncService {
         await this.connections.markStatus(conn.id, ConnectionStatus.EXPIRED);
         throw new Error(`Connection ${conn.id} expired and has no refresh token`);
       }
-      const provider = this.registry.get(conn.provider);
+      const provider = this.registry.get(conn.provider as Provider);
       const tokens = await provider.refresh(refreshToken);
-      const updated = await this.connections.upsertFromTokens(conn.userId, conn.provider, tokens);
+      const updated = await this.connections.upsertFromTokens(
+        conn.userId,
+        conn.provider as Provider,
+        tokens,
+      );
       const access = this.connections.decryptAccessToken(updated);
       if (!access) throw new Error(`Connection ${conn.id} refresh returned no access token`);
       return access;

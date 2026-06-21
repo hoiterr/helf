@@ -1,4 +1,4 @@
-import { Intensity } from '@prisma/client';
+import { Intensity } from '../domain/enums';
 import { ReadinessStatus } from '../analytics/rules';
 
 /** What the guidance engine recommends doing with a planned session today. */

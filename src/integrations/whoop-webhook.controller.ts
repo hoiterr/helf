@@ -1,6 +1,6 @@
 import { Controller, Headers, HttpCode, Logger, Post, Req, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Provider } from '@prisma/client';
+import { Provider } from '../domain/enums';
 import type { RawBodyRequest } from '@nestjs/common';
 import type { Request } from 'express';
 import { WhoopConfig } from '../config/configuration';

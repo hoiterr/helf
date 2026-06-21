@@ -1,11 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import {
-  Intensity,
-  PlannedStatus,
-  PlannedWorkout,
-  Prisma,
-  WorkoutTemplate,
-} from '@prisma/client';
+import { Prisma, PlannedWorkout, WorkoutTemplate } from '@prisma/client';
+import { Intensity, PlannedStatus } from '../domain/enums';
 import { ReadinessService } from '../analytics/readiness.service';
 import { dayKey, utcMidnight } from '../common/time';
 import { PrismaService } from '../prisma/prisma.service';
@@ -22,8 +17,11 @@ const INTENSITY_RANK: Record<Intensity, number> = {
   MAX: 4,
 };
 
-function jsonOrUndef(value: unknown): Prisma.InputJsonValue | undefined {
-  return value == null ? undefined : (value as Prisma.InputJsonValue);
+/** Serialize structured steps to a JSON string column (SQLite has no Json type).
+ *  Strings are assumed already-serialized (e.g. copied from a template) and pass through. */
+function serializeSteps(value: unknown): string | undefined {
+  if (value == null) return undefined;
+  return typeof value === 'string' ? value : JSON.stringify(value);
 }
 
 @Injectable()
@@ -52,7 +50,7 @@ export class PlanningService {
         estimatedDurationMin: dto.estimatedDurationMin,
         estimatedLoad,
         description: dto.description,
-        steps: jsonOrUndef(dto.steps),
+        steps: serializeSteps(dto.steps),
       },
     });
   }
@@ -88,7 +86,7 @@ export class PlanningService {
       const t = await this.prisma.workoutTemplate.findUniqueOrThrow({ where: { id: dto.templateId } });
       title = t.title;
       sportType = t.sportType;
-      intensity = t.intensity;
+      intensity = t.intensity as Intensity;
       durationMin = t.estimatedDurationMin ?? undefined;
       estimatedLoad = t.estimatedLoad ?? undefined;
       steps = t.steps ?? undefined;
@@ -123,7 +121,7 @@ export class PlanningService {
         estimatedDurationMin: durationMin,
         estimatedLoad,
         notes: dto.notes,
-        steps: jsonOrUndef(steps),
+        steps: serializeSteps(steps),
         order,
         templateId,
       },
@@ -143,7 +141,7 @@ export class PlanningService {
     // Keep projected load consistent when intensity/duration change.
     if (dto.intensity !== undefined || dto.estimatedDurationMin !== undefined) {
       const current = await this.prisma.plannedWorkout.findUniqueOrThrow({ where: { id } });
-      const intensity = dto.intensity ?? current.intensity;
+      const intensity = (dto.intensity ?? current.intensity) as Intensity;
       const duration = dto.estimatedDurationMin ?? current.estimatedDurationMin ?? undefined;
       if (duration != null) data.estimatedLoad = estimateLoad(duration, intensity);
     }
@@ -224,9 +222,10 @@ export class PlanningService {
 
   /** Decide what to do with one planned session given today's readiness band. */
   private adjust(p: PlannedWorkout, status: DayGuidance['readiness']['status']): WorkoutAdjustment {
-    const rank = INTENSITY_RANK[p.intensity];
+    const intensity = p.intensity as Intensity;
+    const rank = INTENSITY_RANK[intensity];
     let action: DayAction = 'proceed';
-    let suggested: Intensity = p.intensity;
+    let suggested: Intensity = intensity;
     let suggestion = 'Train as planned.';
 
     if (status === 'RED') {
@@ -260,7 +259,7 @@ export class PlanningService {
     return {
       plannedWorkoutId: p.id,
       title: p.title,
-      plannedIntensity: p.intensity,
+      plannedIntensity: intensity,
       suggestedIntensity: suggested,
       action,
       suggestion,

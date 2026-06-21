@@ -1,5 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import { Provider } from '@prisma/client';
+import { Provider } from '../domain/enums';
 
 /** Parse a URL path segment like "whoop" into the Provider enum. */
 export function parseProvider(value: string): Provider {

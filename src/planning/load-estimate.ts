@@ -1,4 +1,4 @@
-import { Intensity } from '@prisma/client';
+import { Intensity } from '../domain/enums';
 
 /**
  * Maps planned intensity to a training-load multiplier. A planned session's load

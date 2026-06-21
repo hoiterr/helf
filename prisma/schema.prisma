@@ -1,42 +1,24 @@
-// helf — canonical health-data schema
+// helf — canonical health-data + planning schema
 //
-// Design principle: every external provider (Whoop, Oura, Polar, Garmin-later…)
-// is normalized INTO these tables. Product/analytics code reads only from here
-// and never knows or cares which device the data came from. Adding a provider =
-// implementing a normalizer that writes these rows; it changes nothing downstream.
+// Runs on SQLite out of the box (zero-config local dev: `npm run dev` creates and
+// migrates a local file DB — no Postgres to install). The schema is deliberately
+// portable: no DB-level enums, scalar-list, or Json columns, so the SAME schema
+// also runs on PostgreSQL in production by switching `provider`/`url` below.
+// Enum-like fields are plain strings (TS unions in src/domain/enums.ts); JSON
+// payloads (`raw`, `steps`, `scopes`) are stored as serialized strings.
 //
-// Every metric row carries:
-//   - `source`      which provider it came from (for provenance / de-dup priority)
-//   - `externalId`  the provider's id for the record (idempotent upserts)
-//   - `raw`         the original payload (audit / re-normalization without re-fetch)
+// Every provider (Whoop, Oura, Polar, Garmin-later…) normalizes INTO these tables;
+// product/analytics code reads only from here and never knows the source device.
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
+  // Local dev default: SQLite (file:./dev.db). For production, set
+  // provider = "postgresql" and DATABASE_URL to your Postgres connection string.
+  provider = "sqlite"
   url      = env("DATABASE_URL")
-}
-
-// ── Providers ─────────────────────────────────────────────────────────────────
-
-enum Provider {
-  WHOOP
-  OURA
-  POLAR
-  WITHINGS
-  EIGHT_SLEEP
-  GARMIN // reached via aggregator until Garmin's direct program reopens
-  STRAVA
-  DEXCOM
-}
-
-enum ConnectionStatus {
-  ACTIVE
-  EXPIRED // refresh token invalid / user must re-consent
-  REVOKED // user disconnected
-  ERROR
 }
 
 // ── Core ──────────────────────────────────────────────────────────────────────
@@ -62,21 +44,24 @@ model User {
 /// A user's linked account at one provider. Holds the OAuth tokens (encrypted at
 /// rest) and the provider-side user id used to match incoming webhooks.
 model ProviderConnection {
-  id             String           @id @default(uuid())
-  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id             String    @id @default(uuid())
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId         String
-  provider       Provider
-  status         ConnectionStatus @default(ACTIVE)
+  /// Provider enum value (see src/domain/enums.ts Provider).
+  provider       String
+  /// ConnectionStatus enum value.
+  status         String    @default("ACTIVE")
   // Provider's own id for this user (webhooks reference this, not our userId)
   externalUserId String?
-  scopes         String[]         @default([])
+  /// OAuth scopes, stored as a JSON-encoded string array.
+  scopes         String?
   // Tokens are AES-256-GCM encrypted blobs — never stored in plaintext.
   accessToken    String?
   refreshToken   String?
   tokenExpiresAt DateTime?
   lastSyncedAt   DateTime?
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   @@unique([userId, provider])
   @@index([provider, externalUserId])
@@ -86,31 +71,29 @@ model ProviderConnection {
 
 /// One night of sleep, normalized across providers.
 model SleepSession {
-  id       String   @id @default(uuid())
-  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId   String
-  source   Provider
+  id         String @id @default(uuid())
+  user       User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String
+  source     String
   externalId String
 
-  start            DateTime
-  end              DateTime
-  timezoneOffset   Int? // minutes from UTC at time of record
-  totalSleepMin    Int?
-  timeInBedMin     Int?
-  efficiencyPct    Float?
-  // Stage breakdown (minutes) — null where a provider doesn't report it
-  lightMin         Int?
-  deepMin          Int?
-  remMin           Int?
-  awakeMin         Int?
-  // Physiology captured during the session
-  avgHeartRate     Float?
-  avgHrvRmssd      Float?
-  respiratoryRate  Float?
-  // Provider's own 0-100 sleep score, if any
-  sleepScore       Float?
+  start           DateTime
+  end             DateTime
+  timezoneOffset  Int?
+  totalSleepMin   Int?
+  timeInBedMin    Int?
+  efficiencyPct   Float?
+  lightMin        Int?
+  deepMin         Int?
+  remMin          Int?
+  awakeMin        Int?
+  avgHeartRate    Float?
+  avgHrvRmssd     Float?
+  respiratoryRate Float?
+  sleepScore      Float?
 
-  raw       Json
+  /// Original provider payload, JSON-encoded (audit / re-normalization).
+  raw       String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -119,25 +102,23 @@ model SleepSession {
 }
 
 /// Daily recovery / readiness snapshot — the morning "how ready am I" metrics.
-/// This is the cross-device unification of Whoop Recovery, Oura Readiness, etc.
 model DailyRecovery {
-  id     String   @id @default(uuid())
-  user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId String
-  source Provider
+  id         String @id @default(uuid())
+  user       User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String
+  source     String
   externalId String
 
-  /// Calendar day this recovery applies to (local date, normalized to UTC midnight)
-  date            DateTime
-  /// Provider's headline 0-100 recovery/readiness score
-  score           Float?
+  /// Calendar day this recovery applies to (UTC midnight).
+  date             DateTime
+  score            Float?
   restingHeartRate Float?
-  hrvRmssd        Float?
-  spo2Pct         Float?
-  skinTempCelsius Float?
-  respiratoryRate Float?
+  hrvRmssd         Float?
+  spo2Pct          Float?
+  skinTempCelsius  Float?
+  respiratoryRate  Float?
 
-  raw       Json
+  raw       String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -146,28 +127,26 @@ model DailyRecovery {
   @@index([userId, date])
 }
 
-/// A workout / activity. `strain` and `load` are provider-specific effort scores;
-/// we also derive our own training-load (see analytics layer) from these + HR.
+/// A workout / activity, normalized across providers.
 model Workout {
-  id     String   @id @default(uuid())
-  user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId String
-  source Provider
+  id         String @id @default(uuid())
+  user       User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String
+  source     String
   externalId String
 
-  sportType    String?
-  start        DateTime
-  end          DateTime
-  durationMin  Float?
-  avgHeartRate Float?
-  maxHeartRate Float?
-  calories     Float?
+  sportType      String?
+  start          DateTime
+  end            DateTime
+  durationMin    Float?
+  avgHeartRate   Float?
+  maxHeartRate   Float?
+  calories       Float?
   distanceMeters Float?
-  /// Provider effort scores (e.g. Whoop strain 0-21)
-  strain       Float?
-  load         Float?
+  strain         Float?
+  load           Float?
 
-  raw       Json
+  raw       String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -178,13 +157,12 @@ model Workout {
   @@index([userId, start])
 }
 
-/// Daily rollup of all-day metrics (steps, calories, resting HR). One row per
-/// user/source/day; useful for trend charts without scanning intraday samples.
+/// Daily rollup of all-day metrics (steps, calories, resting HR).
 model DailySummary {
-  id     String   @id @default(uuid())
-  user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(uuid())
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String
-  source Provider
+  source String
 
   date             DateTime
   steps            Int?
@@ -193,7 +171,7 @@ model DailySummary {
   restingHeartRate Float?
   avgStressLevel   Float?
 
-  raw       Json?
+  raw       String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -202,12 +180,11 @@ model DailySummary {
 }
 
 /// Optional high-resolution HRV samples (e.g. Oura's 5-min nightly intervals).
-/// Kept separate from SleepSession because it's high-volume time-series data.
 model HrvSample {
-  id     String   @id @default(uuid())
-  user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(uuid())
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String
-  source Provider
+  source String
 
   recordedAt DateTime
   rmssd      Float
@@ -218,36 +195,24 @@ model HrvSample {
 
 // ── Planning ──────────────────────────────────────────────────────────────────
 
-enum Intensity {
-  RECOVERY
-  EASY
-  MODERATE
-  HARD
-  MAX
-}
-
-enum PlannedStatus {
-  PLANNED
-  COMPLETED
-  SKIPPED
-}
-
 /// A reusable session definition the user (or the system) can drop onto any day.
 /// `userId == null` marks a built-in/global template.
 model WorkoutTemplate {
-  id        String    @id @default(uuid())
-  user      User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String?
-  title     String
-  sportType String
-  intensity Intensity @default(MODERATE)
+  id                   String  @id @default(uuid())
+  user                 User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId               String?
+  title                String
+  sportType            String
+  /// Intensity enum value.
+  intensity            String  @default("MODERATE")
   estimatedDurationMin Int?
   estimatedLoad        Float?
-  description String?
-  /// Structured steps (warmup / intervals / sets / cooldown) — see WorkoutStep type.
-  steps     Json?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  description          String?
+  /// Structured steps, JSON-encoded — see WorkoutStep type.
+  steps                String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   planned PlannedWorkout[]
 
@@ -257,21 +222,24 @@ model WorkoutTemplate {
 /// A session scheduled on a specific day. Auto-reconciles to a completed Workout
 /// once the matching device activity is ingested.
 model PlannedWorkout {
-  id        String        @id @default(uuid())
-  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String
+  id                   String   @id @default(uuid())
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId               String
   /// Scheduled calendar day, normalized to UTC midnight.
-  date      DateTime
-  title     String
-  sportType String
-  intensity Intensity     @default(MODERATE)
+  date                 DateTime
+  title                String
+  sportType            String
+  /// Intensity enum value.
+  intensity            String   @default("MODERATE")
   estimatedDurationMin Int?
   estimatedLoad        Float?
-  notes     String?
-  steps     Json?
-  status    PlannedStatus @default(PLANNED)
+  notes                String?
+  /// Structured steps, JSON-encoded — see WorkoutStep type.
+  steps                String?
+  /// PlannedStatus enum value.
+  status               String   @default("PLANNED")
   /// Ordering within a day (drag-to-reorder).
-  order     Int           @default(0)
+  order                Int      @default(0)
 
   template   WorkoutTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
   templateId String?

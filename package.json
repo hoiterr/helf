@@ -5,15 +5,19 @@
   "license": "UNLICENSED",
   "private": true,
   "scripts": {
+    "setup": "node scripts/setup-env.mjs && prisma generate && prisma db push && npm run db:seed",
+    "dev": "npm run setup && nest start --watch",
     "build": "nest build",
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:prod": "node dist/main.js",
     "lint": "eslint \"{src,test}/**/*.ts\" --fix",
     "format": "prettier --write \"src/**/*.ts\"",
-    "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate dev",
-    "prisma:studio": "prisma studio"
+    "db:push": "prisma db push",
+    "db:seed": "node prisma/seed.mjs",
+    "db:reset": "prisma db push --force-reset --accept-data-loss && npm run db:seed",
+    "db:studio": "prisma studio",
+    "prisma:generate": "prisma generate"
   },
   "dependencies": {
     "@nestjs/axios": "^3.0.2",

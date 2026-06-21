@@ -54,25 +54,28 @@ data came from.
 | `src/analytics/` | Training load (CTL/ATL/TSB/ACWR) + threshold rules engine |
 | `src/dashboard/` | Assembled read model for the calendar/dashboard UI |
 
-## Getting started
+## Getting started (zero-config)
+
+No database to install — helf runs on a local **SQLite** file out of the box.
 
 ```bash
-# 1. Install deps
 npm install
-
-# 2. Configure
-cp .env.example .env
-#   - set DATABASE_URL to your Postgres
-#   - generate a key:  openssl rand -hex 32   → TOKEN_ENCRYPTION_KEY
-#   - create a WHOOP app at https://developer.whoop.com and fill WHOOP_* vars
-
-# 3. Database
-npm run prisma:generate
-npm run prisma:migrate
-
-# 4. Run
-npm run start:dev
+npm run dev
 ```
+
+`npm run dev` does everything: creates `.env` from the example, generates the
+Prisma client, creates & syncs the local DB (`prisma/dev.db`), seeds a demo user
+(`demo-user` / demo@helf.app) with templates and today's plan, then starts the API
+on `http://localhost:3000` in watch mode. Open `/users/demo-user/today` and you'll
+see live data immediately.
+
+Handy scripts: `npm run db:seed` (re-seed), `npm run db:reset` (wipe + reseed),
+`npm run db:studio` (browse the DB).
+
+> **Production / Postgres:** the schema is portable. Set `provider = "postgresql"`
+> in `prisma/schema.prisma` and point `DATABASE_URL` at your Postgres — no model
+> changes needed. To connect real devices, add `WHOOP_*` vars (create an app at
+> developer.whoop.com) and a 32-byte `TOKEN_ENCRYPTION_KEY` (`openssl rand -hex 32`).
 
 ## Key endpoints
 
@@ -92,7 +95,8 @@ npm run start:dev
 1. Implement `HealthProvider` (OAuth + `fetchSince` → `CanonicalBatch`), like
    `src/providers/whoop/whoop.provider.ts`.
 2. Add a normalizer mapping its payloads to canonical records.
-3. Register it in `ProviderRegistry` and add the enum value in `schema.prisma`.
+3. Register it in `ProviderRegistry` and add the value to `Provider` in
+   `src/domain/enums.ts`.
 
 Oura, Polar, and Withings are open/self-serve and follow this pattern directly.
 For **Garmin**, the same `fetchSince` slot is fed by an aggregator (Terra/Rook)

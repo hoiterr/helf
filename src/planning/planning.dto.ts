@@ -1,4 +1,4 @@
-import { Intensity, PlannedStatus } from '@prisma/client';
+import { Intensity, PlannedStatus } from '../domain/enums';
 import {
   IsArray,
   IsEnum,
