@@ -77,6 +77,20 @@ Handy scripts: `npm run db:seed` (re-seed), `npm run db:reset` (wipe + reseed),
 > changes needed. To connect real devices, add `WHOOP_*` vars (create an app at
 > developer.whoop.com) and a 32-byte `TOKEN_ENCRYPTION_KEY` (`openssl rand -hex 32`).
 
+## Frontend (`web/`)
+
+A **Next.js** app wires the `@helf/ui` design system to this API — the Home
+screen (readiness gate, vitals, the week, training load, quick-add) and a
+Calendar planner. Run the backend, then:
+
+```bash
+cd web && npm install && npm run dev   # → http://localhost:3001
+```
+
+See [`web/README.md`](web/README.md). The design system itself lives in
+[`design-system/`](design-system) (`@helf/ui`) with a Storybook of every
+component and the home-screen wireframe.
+
 ## Key endpoints
 
 | Method | Path | Purpose |
@@ -123,6 +137,7 @@ until Garmin's direct program reopens.
 - [ ] Oura, Polar, Withings, Eight Sleep providers
 - [ ] Garmin via aggregator
 - [ ] Auth/users hardening (real sessions, signed OAuth state)
-- [ ] Day-to-day home screen (design system + app)
+- [x] Day-to-day home screen (design system + Next.js app)
+- [ ] Auth/users hardening (the web app loads a demo user for now)
 - [ ] Nutrition + CGM integrations
 - [ ] AI insight/coach layer over the structured outputs
