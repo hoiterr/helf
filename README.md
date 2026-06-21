@@ -89,6 +89,15 @@ Handy scripts: `npm run db:seed` (re-seed), `npm run db:reset` (wipe + reseed),
 | `POST` | `/providers/whoop/webhook` | WHOOP webhook (signature-verified) |
 | `POST` | `/connections/:id/sync` | On-demand "sync now" |
 | `GET`  | `/users/:userId/dashboard` | Recovery + sleep + load + recommendation |
+| `GET`  | `/users/:userId/today` | Readiness gate: per-session proceed/reduce/swap/rest |
+| `GET`  | `/users/:userId/calendar?from&to` | Per-day planned + completed + readiness + load |
+| `POST` | `/planning/parse` | Natural-language → structured workout (preview) |
+| `POST` | `/users/:userId/planned` | Schedule a session (`text`, `templateId`, or fields) |
+| `GET`/`POST` | `/users/:userId/templates` | Reusable session templates |
+| `POST` | `/users/:userId/plans` | Create a plan with periodization blocks |
+| `GET`  | `/plans/:id/schedule` | Week-by-week block / target-vs-planned load |
+| `POST`/`GET` | `/users/:userId/recurring` | Recurring rules (auto-materialize to the calendar) |
+| `POST` | `/users/:userId/materialize` | Generate planned sessions from rules over a range |
 
 ## Adding a provider
 
@@ -108,9 +117,12 @@ until Garmin's direct program reopens.
 - [x] WHOOP integration (OAuth, webhook, normalize, sync)
 - [x] Training-load analytics + threshold rules engine
 - [x] Dashboard read API
+- [x] Zero-config local app (SQLite, `npm run dev`)
+- [x] Training calendar + workout planning (NL quick-add, readiness-aware guidance)
+- [x] Periodization: plans, multi-week blocks, recurring sessions
 - [ ] Oura, Polar, Withings, Eight Sleep providers
 - [ ] Garmin via aggregator
 - [ ] Auth/users hardening (real sessions, signed OAuth state)
-- [ ] Training calendar / plan model
+- [ ] Day-to-day home screen (design system + app)
 - [ ] Nutrition + CGM integrations
 - [ ] AI insight/coach layer over the structured outputs

@@ -8,6 +8,7 @@ import { estimateLoad } from './load-estimate';
 import { parseWorkout, ParsedWorkout } from './nl-parser';
 import { CreatePlannedDto, CreateTemplateDto, UpdatePlannedDto } from './planning.dto';
 import { DayAction, DayGuidance, WorkoutAdjustment } from './planning.types';
+import { PlannedView, TemplateView, viewPlanned, viewTemplate } from './serialization';
 
 const INTENSITY_RANK: Record<Intensity, number> = {
   RECOVERY: 0,
@@ -33,7 +34,7 @@ export class PlanningService {
 
   // ── Templates ───────────────────────────────────────────────────────────────
 
-  createTemplate(userId: string, dto: CreateTemplateDto): Promise<WorkoutTemplate> {
+  async createTemplate(userId: string, dto: CreateTemplateDto): Promise<TemplateView> {
     const intensity = dto.intensity ?? Intensity.MODERATE;
     const estimatedLoad =
       dto.estimatedLoad ??
@@ -41,7 +42,7 @@ export class PlanningService {
         ? estimateLoad(dto.estimatedDurationMin, intensity)
         : undefined);
 
-    return this.prisma.workoutTemplate.create({
+    const row = await this.prisma.workoutTemplate.create({
       data: {
         userId,
         title: dto.title,
@@ -53,14 +54,16 @@ export class PlanningService {
         steps: serializeSteps(dto.steps),
       },
     });
+    return viewTemplate(row);
   }
 
   /** A user's own templates plus any system (userId == null) templates. */
-  listTemplates(userId: string): Promise<WorkoutTemplate[]> {
-    return this.prisma.workoutTemplate.findMany({
+  async listTemplates(userId: string): Promise<TemplateView[]> {
+    const rows = await this.prisma.workoutTemplate.findMany({
       where: { OR: [{ userId }, { userId: null }] },
       orderBy: { title: 'asc' },
     });
+    return rows.map(viewTemplate);
   }
 
   // ── Quick-add ─────────────────────────────────────────────────────────────--
@@ -73,7 +76,7 @@ export class PlanningService {
 
   // ── Planned workouts ─────────────────────────────────────────────────────────
 
-  async createPlanned(userId: string, dto: CreatePlannedDto): Promise<PlannedWorkout> {
+  async createPlanned(userId: string, dto: CreatePlannedDto): Promise<PlannedView> {
     let title = dto.title;
     let sportType = dto.sportType;
     let intensity: Intensity = dto.intensity ?? Intensity.MODERATE;
@@ -111,7 +114,7 @@ export class PlanningService {
     const date = utcMidnight(new Date(dto.date));
     const order = await this.prisma.plannedWorkout.count({ where: { userId, date } });
 
-    return this.prisma.plannedWorkout.create({
+    const row = await this.prisma.plannedWorkout.create({
       data: {
         userId,
         date,
@@ -126,9 +129,10 @@ export class PlanningService {
         templateId,
       },
     });
+    return viewPlanned(row);
   }
 
-  async updatePlanned(id: string, dto: UpdatePlannedDto): Promise<PlannedWorkout> {
+  async updatePlanned(id: string, dto: UpdatePlannedDto): Promise<PlannedView> {
     const data: Prisma.PlannedWorkoutUpdateInput = {};
     if (dto.date) data.date = utcMidnight(new Date(dto.date));
     if (dto.title !== undefined) data.title = dto.title;
@@ -146,18 +150,20 @@ export class PlanningService {
       if (duration != null) data.estimatedLoad = estimateLoad(duration, intensity);
     }
 
-    return this.prisma.plannedWorkout.update({ where: { id }, data });
+    const row = await this.prisma.plannedWorkout.update({ where: { id }, data });
+    return viewPlanned(row);
   }
 
   async deletePlanned(id: string): Promise<void> {
     await this.prisma.plannedWorkout.delete({ where: { id } });
   }
 
-  completePlanned(id: string, workoutId?: string): Promise<PlannedWorkout> {
-    return this.prisma.plannedWorkout.update({
+  async completePlanned(id: string, workoutId?: string): Promise<PlannedView> {
+    const row = await this.prisma.plannedWorkout.update({
       where: { id },
       data: { status: PlannedStatus.COMPLETED, completedWorkoutId: workoutId ?? undefined },
     });
+    return viewPlanned(row);
   }
 
   /**

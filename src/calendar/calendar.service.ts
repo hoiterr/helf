@@ -1,14 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import { DailyRecovery, PlannedWorkout, Workout } from '@prisma/client';
+import { DailyRecovery, Workout } from '@prisma/client';
 import { bandForScore, ReadinessStatus } from '../analytics/rules';
 import { workoutLoad } from '../analytics/training-load';
 import { dayKey, utcMidnight } from '../common/time';
+import { PlannedView, viewPlanned } from '../planning/serialization';
 import { PrismaService } from '../prisma/prisma.service';
 
 export interface CalendarDay {
   date: string;
   readiness: { score: number; status: ReadinessStatus } | null;
-  planned: PlannedWorkout[];
+  planned: PlannedView[];
   completed: Workout[];
   plannedLoad: number;
   completedLoad: number;
@@ -57,7 +58,7 @@ export class CalendarService {
       days.push({
         date: key,
         readiness: score != null ? { score, status: bandForScore(score) } : null,
-        planned: dayPlanned,
+        planned: dayPlanned.map(viewPlanned),
         completed: dayCompleted,
         plannedLoad: round(dayPlanned.reduce((s, p) => s + (p.estimatedLoad ?? 0), 0)),
         completedLoad: round(dayCompleted.reduce((s, w) => s + workoutLoad(w), 0)),

@@ -12,6 +12,7 @@ import { IntegrationsModule } from './integrations/integrations.module';
 import { UsersModule } from './users/users.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { PlanningModule } from './planning/planning.module';
+import { PlanModule } from './plan/plan.module';
 import { CalendarModule } from './calendar/calendar.module';
 import { HealthController } from './health/health.controller';
 
@@ -29,6 +30,7 @@ import { HealthController } from './health/health.controller';
     UsersModule,
     DashboardModule,
     PlanningModule,
+    PlanModule,
     CalendarModule,
   ],
   controllers: [HealthController],

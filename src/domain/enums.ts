@@ -46,3 +46,19 @@ export const PlannedStatus = {
   SKIPPED: 'SKIPPED',
 } as const;
 export type PlannedStatus = (typeof PlannedStatus)[keyof typeof PlannedStatus];
+
+/** Periodization phase of a plan block. */
+export const BlockFocus = {
+  BASE: 'BASE',
+  BUILD: 'BUILD',
+  PEAK: 'PEAK',
+  TAPER: 'TAPER',
+  RECOVERY: 'RECOVERY',
+} as const;
+export type BlockFocus = (typeof BlockFocus)[keyof typeof BlockFocus];
+
+export const PlanStatus = {
+  ACTIVE: 'ACTIVE',
+  ARCHIVED: 'ARCHIVED',
+} as const;
+export type PlanStatus = (typeof PlanStatus)[keyof typeof PlanStatus];

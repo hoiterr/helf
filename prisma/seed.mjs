@@ -12,6 +12,13 @@ function utcToday() {
   return d;
 }
 
+function startOfUtcWeek(date) {
+  const d = new Date(date);
+  d.setUTCHours(0, 0, 0, 0);
+  d.setUTCDate(d.getUTCDate() - d.getUTCDay());
+  return d;
+}
+
 async function main() {
   await prisma.user.upsert({
     where: { id: USER_ID },
@@ -66,7 +73,75 @@ async function main() {
     },
   });
 
-  console.log(`• Seeded demo user "${USER_ID}" (email demo@helf.app) with templates + today's plan`);
+  // ── Periodization: a plan with blocks + a recurring rule, materialized ──────
+  const weekStart = startOfUtcWeek(new Date());
+  await prisma.trainingPlan.upsert({
+    where: { id: 'plan-spring-build' },
+    update: {},
+    create: {
+      id: 'plan-spring-build',
+      userId: USER_ID,
+      name: 'Spring Build',
+      startDate: weekStart,
+      blocks: {
+        create: [
+          { name: 'Base', focus: 'BASE', weeks: 2, order: 0, weeklyLoadTarget: 280 },
+          { name: 'Build', focus: 'BUILD', weeks: 3, order: 1, weeklyLoadTarget: 360 },
+          { name: 'Taper', focus: 'TAPER', weeks: 1, order: 2, weeklyLoadTarget: 200 },
+        ],
+      },
+    },
+  });
+
+  await prisma.recurringRule.upsert({
+    where: { id: 'rule-threshold' },
+    update: {},
+    create: {
+      id: 'rule-threshold',
+      userId: USER_ID,
+      planId: 'plan-spring-build',
+      title: 'Threshold run',
+      sportType: 'Running',
+      intensity: 'HARD',
+      estimatedDurationMin: 50,
+      estimatedLoad: 70,
+      daysOfWeek: JSON.stringify([2, 4]), // Tue + Thu
+      weekInterval: 1,
+      startDate: weekStart,
+      active: true,
+    },
+  });
+
+  // Materialize the recurring rule across the next 21 days (deterministic ids → idempotent).
+  for (let i = 0; i < 21; i++) {
+    const d = new Date(weekStart);
+    d.setUTCDate(d.getUTCDate() + i);
+    if (![2, 4].includes(d.getUTCDay())) continue;
+    const id = `gen-threshold-${d.toISOString().slice(0, 10)}`;
+    await prisma.plannedWorkout.upsert({
+      where: { id },
+      update: {},
+      create: {
+        id,
+        userId: USER_ID,
+        date: d,
+        title: 'Threshold run',
+        sportType: 'Running',
+        intensity: 'HARD',
+        estimatedDurationMin: 50,
+        estimatedLoad: 70,
+        status: 'PLANNED',
+        order: 5,
+        generated: true,
+        recurringRuleId: 'rule-threshold',
+        planId: 'plan-spring-build',
+      },
+    });
+  }
+
+  console.log(
+    `• Seeded demo user "${USER_ID}" with templates, today's plan, and "Spring Build" plan (3 blocks + recurring threshold runs)`,
+  );
 }
 
 main()

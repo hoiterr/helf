@@ -39,6 +39,8 @@ model User {
   hrvSamples       HrvSample[]
   workoutTemplates WorkoutTemplate[]
   plannedWorkouts  PlannedWorkout[]
+  trainingPlans    TrainingPlan[]
+  recurringRules   RecurringRule[]
 }
 
 /// A user's linked account at one provider. Holds the OAuth tokens (encrypted at
@@ -214,7 +216,8 @@ model WorkoutTemplate {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  planned PlannedWorkout[]
+  planned        PlannedWorkout[]
+  recurringRules RecurringRule[]
 
   @@index([userId])
 }
@@ -248,9 +251,89 @@ model PlannedWorkout {
   completedWorkout   Workout? @relation(fields: [completedWorkoutId], references: [id], onDelete: SetNull)
   completedWorkoutId String?  @unique
 
+  /// Periodization links + provenance.
+  plan            TrainingPlan?  @relation(fields: [planId], references: [id], onDelete: SetNull)
+  planId          String?
+  recurringRule   RecurringRule? @relation(fields: [recurringRuleId], references: [id], onDelete: SetNull)
+  recurringRuleId String?
+  /// True when auto-generated from a recurring rule (vs. hand-placed).
+  generated       Boolean        @default(false)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([userId, date])
   @@index([userId, status])
+  @@index([recurringRuleId, date])
+}
+
+// ── Periodization (plans, blocks, recurring rules) ─────────────────────────────
+
+/// A named training plan with a start date and an optional goal/event date.
+model TrainingPlan {
+  id        String    @id @default(uuid())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  name      String
+  startDate DateTime
+  goalDate  DateTime?
+  /// PlanStatus enum value.
+  status    String    @default("ACTIVE")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  blocks          PlanBlock[]
+  rules           RecurringRule[]
+  plannedWorkouts PlannedWorkout[]
+
+  @@index([userId])
+}
+
+/// An ordered phase within a plan (e.g. "Build", 4 weeks). Provides periodization
+/// structure + an optional weekly load target the calendar can chart against.
+model PlanBlock {
+  id     String @id @default(uuid())
+  plan   TrainingPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  planId String
+  name   String
+  /// BlockFocus enum value.
+  focus  String @default("BASE")
+  weeks  Int    @default(1)
+  order  Int    @default(0)
+  weeklyLoadTarget Float?
+
+  @@index([planId])
+}
+
+/// A recurring session that materializes into concrete PlannedWorkout rows
+/// (e.g. "Threshold run every Tuesday"). Cadence = days-of-week × weekInterval.
+model RecurringRule {
+  id                   String   @id @default(uuid())
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId               String
+  plan                 TrainingPlan? @relation(fields: [planId], references: [id], onDelete: SetNull)
+  planId               String?
+  title                String
+  sportType            String
+  /// Intensity enum value.
+  intensity            String   @default("MODERATE")
+  estimatedDurationMin Int?
+  estimatedLoad        Float?
+  /// JSON array of weekday numbers (0 = Sunday … 6 = Saturday).
+  daysOfWeek           String
+  /// Repeat every N weeks (1 = weekly).
+  weekInterval         Int      @default(1)
+  startDate            DateTime
+  endDate              DateTime?
+  active               Boolean  @default(true)
+
+  template   WorkoutTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  templateId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  plannedWorkouts PlannedWorkout[]
+
+  @@index([userId])
 }

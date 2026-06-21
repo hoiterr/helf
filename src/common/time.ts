@@ -13,3 +13,18 @@ export function dayKey(date: Date): string {
 export function utcMidnight(date: Date): Date {
   return new Date(`${dayKey(date)}T00:00:00.000Z`);
 }
+
+export function addDays(date: Date, n: number): Date {
+  const d = new Date(date);
+  d.setUTCDate(d.getUTCDate() + n);
+  return d;
+}
+
+/** UTC midnight of the Sunday that begins `date`'s week. */
+export function startOfUtcWeek(date: Date): Date {
+  const d = utcMidnight(date);
+  d.setUTCDate(d.getUTCDate() - d.getUTCDay());
+  return d;
+}
+
+export const MS_PER_WEEK = 7 * 24 * 60 * 60 * 1000;
