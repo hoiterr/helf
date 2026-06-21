@@ -1,0 +1,43 @@
+{
+  "name": "@helf/ui",
+  "version": "0.1.0",
+  "description": "helf design system — React components, tokens, and styles for the fitness & recovery platform",
+  "private": true,
+  "type": "module",
+  "main": "./dist/helf-ui.es.js",
+  "module": "./dist/helf-ui.es.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/helf-ui.es.js"
+    },
+    "./styles.css": "./dist/style.css",
+    "./tokens.css": "./src/tokens/tokens.css"
+  },
+  "files": ["dist"],
+  "sideEffects": ["*.css"],
+  "scripts": {
+    "build": "vite build && tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  },
+  "devDependencies": {
+    "@storybook/addon-essentials": "^8.2.9",
+    "@storybook/react": "^8.2.9",
+    "@storybook/react-vite": "^8.2.9",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "storybook": "^8.2.9",
+    "typescript": "^5.4.5",
+    "vite": "^5.3.3"
+  }
+}

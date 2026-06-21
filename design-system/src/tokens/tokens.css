@@ -1,0 +1,86 @@
+/**
+ * helf design tokens — global CSS custom properties.
+ * Every component styles exclusively from these `--helf-*` variables, so theming
+ * (incl. the dark theme below via [data-theme="dark"]) is a single source of truth.
+ */
+:root {
+  /* ── Color · neutrals ─────────────────────────────────────────────── */
+  --helf-color-bg: #f6f7f9;
+  --helf-color-surface: #ffffff;
+  --helf-color-surface-raised: #ffffff;
+  --helf-color-border: #e4e7ec;
+  --helf-color-text: #101828;
+  --helf-color-text-muted: #667085;
+
+  /* ── Color · brand ────────────────────────────────────────────────── */
+  --helf-color-primary: #5b5bd6;
+  --helf-color-primary-hover: #4a4ac4;
+  --helf-color-on-primary: #ffffff;
+  --helf-color-primary-subtle: #eeeefb;
+
+  /* ── Color · semantic (recovery / readiness: green-amber-red) ─────── */
+  --helf-color-success: #15b079;
+  --helf-color-success-subtle: #e6f6ef;
+  --helf-color-warning: #f59e0b;
+  --helf-color-warning-subtle: #fdf3e3;
+  --helf-color-danger: #e5484d;
+  --helf-color-danger-subtle: #fdeaea;
+
+  /* ── Spacing (4px base scale) ─────────────────────────────────────── */
+  --helf-space-1: 4px;
+  --helf-space-2: 8px;
+  --helf-space-3: 12px;
+  --helf-space-4: 16px;
+  --helf-space-5: 24px;
+  --helf-space-6: 32px;
+  --helf-space-7: 48px;
+  --helf-space-8: 64px;
+
+  /* ── Radius ───────────────────────────────────────────────────────── */
+  --helf-radius-sm: 6px;
+  --helf-radius-md: 10px;
+  --helf-radius-lg: 16px;
+  --helf-radius-full: 999px;
+
+  /* ── Typography ───────────────────────────────────────────────────── */
+  --helf-font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif;
+  --helf-font-mono: ui-monospace, "SF Mono", "Roboto Mono", Menlo, monospace;
+  --helf-text-xs: 12px;
+  --helf-text-sm: 14px;
+  --helf-text-md: 16px;
+  --helf-text-lg: 20px;
+  --helf-text-xl: 28px;
+  --helf-text-2xl: 40px;
+  --helf-weight-regular: 400;
+  --helf-weight-medium: 500;
+  --helf-weight-semibold: 600;
+  --helf-weight-bold: 700;
+  --helf-line-tight: 1.15;
+  --helf-line-normal: 1.5;
+
+  /* ── Elevation ────────────────────────────────────────────────────── */
+  --helf-shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06), 0 1px 3px rgba(16, 24, 40, 0.1);
+  --helf-shadow-md: 0 4px 8px rgba(16, 24, 40, 0.06), 0 12px 16px rgba(16, 24, 40, 0.08);
+}
+
+[data-theme="dark"] {
+  --helf-color-bg: #0c0d10;
+  --helf-color-surface: #16181d;
+  --helf-color-surface-raised: #1d2026;
+  --helf-color-border: #2a2e37;
+  --helf-color-text: #f5f6f8;
+  --helf-color-text-muted: #98a2b3;
+
+  --helf-color-primary: #7c7cf0;
+  --helf-color-primary-hover: #8f8ff3;
+  --helf-color-on-primary: #0c0d10;
+  --helf-color-primary-subtle: #20203b;
+
+  --helf-color-success-subtle: #0e2b22;
+  --helf-color-warning-subtle: #2e2410;
+  --helf-color-danger-subtle: #2e1416;
+
+  --helf-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --helf-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5);
+}

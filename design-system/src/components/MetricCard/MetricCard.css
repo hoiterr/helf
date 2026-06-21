@@ -1,0 +1,54 @@
+.helf-metric {
+  display: flex;
+  flex-direction: column;
+  gap: var(--helf-space-2);
+  padding: var(--helf-space-4) var(--helf-space-5);
+  background: var(--helf-color-surface);
+  border: 1px solid var(--helf-color-border);
+  border-radius: var(--helf-radius-lg);
+  box-shadow: var(--helf-shadow-sm);
+  min-width: 140px;
+}
+
+.helf-metric__label {
+  font-size: var(--helf-text-sm);
+  color: var(--helf-color-text-muted);
+}
+
+.helf-metric__value-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--helf-space-2);
+}
+
+.helf-metric__value {
+  font-size: var(--helf-text-xl);
+  font-weight: var(--helf-weight-bold);
+  color: var(--helf-color-text);
+  line-height: var(--helf-line-tight);
+}
+
+.helf-metric__unit {
+  font-size: var(--helf-text-sm);
+  color: var(--helf-color-text-muted);
+}
+
+.helf-metric__trend {
+  margin-left: auto;
+  font-size: var(--helf-text-xs);
+  font-weight: var(--helf-weight-semibold);
+}
+.helf-metric__trend--good {
+  color: var(--helf-color-success);
+}
+.helf-metric__trend--bad {
+  color: var(--helf-color-danger);
+}
+.helf-metric__trend--flat {
+  color: var(--helf-color-text-muted);
+}
+
+.helf-metric__caption {
+  font-size: var(--helf-text-xs);
+  color: var(--helf-color-text-muted);
+}

@@ -1,0 +1,18 @@
+/**
+ * Minimal base styles. `.helf-root` is the canvas wrapper that establishes the
+ * background, font, and base text color — wrap an app/screen in it so tokens and
+ * theme resolve. Components themselves are fully self-styled.
+ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+.helf-root {
+  font-family: var(--helf-font-sans);
+  color: var(--helf-color-text);
+  background: var(--helf-color-bg);
+  line-height: var(--helf-line-normal);
+  -webkit-font-smoothing: antialiased;
+}

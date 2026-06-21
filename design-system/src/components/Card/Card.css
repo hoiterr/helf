@@ -1,0 +1,45 @@
+.helf-card {
+  background: var(--helf-color-surface);
+  border: 1px solid var(--helf-color-border);
+  border-radius: var(--helf-radius-lg);
+  box-shadow: var(--helf-shadow-sm);
+  overflow: hidden;
+}
+
+.helf-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--helf-space-3);
+  padding: var(--helf-space-4) var(--helf-space-5);
+  border-bottom: 1px solid var(--helf-color-border);
+}
+
+.helf-card__titles {
+  min-width: 0;
+}
+
+.helf-card__title {
+  margin: 0;
+  font-size: var(--helf-text-md);
+  font-weight: var(--helf-weight-semibold);
+  color: var(--helf-color-text);
+}
+
+.helf-card__subtitle {
+  margin: var(--helf-space-1) 0 0;
+  font-size: var(--helf-text-sm);
+  color: var(--helf-color-text-muted);
+}
+
+.helf-card__actions {
+  flex-shrink: 0;
+}
+
+.helf-card__body {
+  padding: var(--helf-space-5);
+}
+
+.helf-card__body--flush {
+  padding: 0;
+}

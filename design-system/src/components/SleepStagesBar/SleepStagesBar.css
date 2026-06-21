@@ -1,0 +1,56 @@
+.helf-sleep {
+  display: flex;
+  flex-direction: column;
+  gap: var(--helf-space-3);
+  width: 100%;
+}
+
+.helf-sleep__bar {
+  display: flex;
+  height: 16px;
+  border-radius: var(--helf-radius-full);
+  overflow: hidden;
+  background: var(--helf-color-bg);
+  gap: 2px;
+}
+
+.helf-sleep__segment {
+  flex-basis: 0;
+  min-width: 4px;
+}
+
+.helf-sleep__empty {
+  flex: 1;
+  background: var(--helf-color-border);
+}
+
+.helf-sleep__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--helf-space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.helf-sleep__legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--helf-space-2);
+  font-size: var(--helf-text-sm);
+}
+
+.helf-sleep__swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.helf-sleep__legend-label {
+  color: var(--helf-color-text-muted);
+}
+
+.helf-sleep__legend-value {
+  color: var(--helf-color-text);
+  font-weight: var(--helf-weight-semibold);
+}

@@ -1,0 +1,41 @@
+.helf-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--helf-space-2);
+  height: 22px;
+  padding: 0 var(--helf-space-3);
+  border-radius: var(--helf-radius-full);
+  font-size: var(--helf-text-xs);
+  font-weight: var(--helf-weight-semibold);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.helf-badge__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--helf-radius-full);
+  background: currentColor;
+}
+
+.helf-badge--neutral {
+  background: var(--helf-color-bg);
+  color: var(--helf-color-text-muted);
+  border: 1px solid var(--helf-color-border);
+}
+.helf-badge--brand {
+  background: var(--helf-color-primary-subtle);
+  color: var(--helf-color-primary);
+}
+.helf-badge--success {
+  background: var(--helf-color-success-subtle);
+  color: var(--helf-color-success);
+}
+.helf-badge--warning {
+  background: var(--helf-color-warning-subtle);
+  color: var(--helf-color-warning);
+}
+.helf-badge--danger {
+  background: var(--helf-color-danger-subtle);
+  color: var(--helf-color-danger);
+}
