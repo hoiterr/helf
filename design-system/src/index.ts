@@ -27,6 +27,9 @@ export type {
 export { ReadinessBanner } from './components/ReadinessBanner/ReadinessBanner';
 export type { ReadinessBannerProps } from './components/ReadinessBanner/ReadinessBanner';
 
+export { TrainingLoadCard } from './components/TrainingLoadCard/TrainingLoadCard';
+export type { TrainingLoadCardProps, AcwrZone } from './components/TrainingLoadCard/TrainingLoadCard';
+
 // ── Planning ──────────────────────────────────────────────────────────────────
 export { IntensityPill } from './components/IntensityPill/IntensityPill';
 export type { IntensityPillProps } from './components/IntensityPill/IntensityPill';
