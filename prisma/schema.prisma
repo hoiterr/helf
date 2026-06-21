@@ -49,12 +49,14 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  connections    ProviderConnection[]
-  sleepSessions  SleepSession[]
-  recoveries     DailyRecovery[]
-  workouts       Workout[]
-  dailySummaries DailySummary[]
-  hrvSamples     HrvSample[]
+  connections      ProviderConnection[]
+  sleepSessions    SleepSession[]
+  recoveries       DailyRecovery[]
+  workouts         Workout[]
+  dailySummaries   DailySummary[]
+  hrvSamples       HrvSample[]
+  workoutTemplates WorkoutTemplate[]
+  plannedWorkouts  PlannedWorkout[]
 }
 
 /// A user's linked account at one provider. Holds the OAuth tokens (encrypted at
@@ -169,6 +171,9 @@ model Workout {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  /// Set when this completed workout has been reconciled against a planned session.
+  plannedWorkout PlannedWorkout?
+
   @@unique([source, externalId])
   @@index([userId, start])
 }
@@ -209,4 +214,75 @@ model HrvSample {
 
   @@unique([userId, source, recordedAt])
   @@index([userId, recordedAt])
+}
+
+// ── Planning ──────────────────────────────────────────────────────────────────
+
+enum Intensity {
+  RECOVERY
+  EASY
+  MODERATE
+  HARD
+  MAX
+}
+
+enum PlannedStatus {
+  PLANNED
+  COMPLETED
+  SKIPPED
+}
+
+/// A reusable session definition the user (or the system) can drop onto any day.
+/// `userId == null` marks a built-in/global template.
+model WorkoutTemplate {
+  id        String    @id @default(uuid())
+  user      User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String?
+  title     String
+  sportType String
+  intensity Intensity @default(MODERATE)
+  estimatedDurationMin Int?
+  estimatedLoad        Float?
+  description String?
+  /// Structured steps (warmup / intervals / sets / cooldown) — see WorkoutStep type.
+  steps     Json?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  planned PlannedWorkout[]
+
+  @@index([userId])
+}
+
+/// A session scheduled on a specific day. Auto-reconciles to a completed Workout
+/// once the matching device activity is ingested.
+model PlannedWorkout {
+  id        String        @id @default(uuid())
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  /// Scheduled calendar day, normalized to UTC midnight.
+  date      DateTime
+  title     String
+  sportType String
+  intensity Intensity     @default(MODERATE)
+  estimatedDurationMin Int?
+  estimatedLoad        Float?
+  notes     String?
+  steps     Json?
+  status    PlannedStatus @default(PLANNED)
+  /// Ordering within a day (drag-to-reorder).
+  order     Int           @default(0)
+
+  template   WorkoutTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  templateId String?
+
+  /// The actual completed activity this plan was fulfilled by, once reconciled.
+  completedWorkout   Workout? @relation(fields: [completedWorkoutId], references: [id], onDelete: SetNull)
+  completedWorkoutId String?  @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, date])
+  @@index([userId, status])
 }

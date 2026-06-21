@@ -1,0 +1,106 @@
+.helf-day {
+  display: flex;
+  flex-direction: column;
+  gap: var(--helf-space-2);
+  min-height: 140px;
+  padding: var(--helf-space-2);
+  background: var(--helf-color-surface);
+  border: 1px solid var(--helf-color-border);
+  border-radius: var(--helf-radius-md);
+}
+
+.helf-day--today {
+  border-color: var(--helf-color-primary);
+  box-shadow: 0 0 0 1px var(--helf-color-primary);
+}
+
+.helf-day__head {
+  display: flex;
+  align-items: center;
+  gap: var(--helf-space-2);
+}
+
+.helf-day__weekday {
+  font-size: var(--helf-text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--helf-color-text-muted);
+}
+
+.helf-day__num {
+  font-size: var(--helf-text-sm);
+  font-weight: var(--helf-weight-semibold);
+  color: var(--helf-color-text);
+}
+
+.helf-day__readiness {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--helf-radius-full);
+  margin-left: auto;
+}
+
+.helf-day__items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--helf-space-1);
+  flex: 1;
+}
+
+.helf-day__item {
+  display: flex;
+  align-items: center;
+  gap: var(--helf-space-2);
+  width: 100%;
+  padding: var(--helf-space-1) var(--helf-space-2);
+  background: var(--helf-color-bg);
+  border: none;
+  border-left: 3px solid var(--helf-color-primary);
+  border-radius: var(--helf-radius-sm);
+  font-family: var(--helf-font-sans);
+  font-size: var(--helf-text-xs);
+  color: var(--helf-color-text);
+  cursor: pointer;
+  text-align: left;
+}
+.helf-day__item:hover {
+  background: var(--helf-color-primary-subtle);
+}
+.helf-day__item--done {
+  background: var(--helf-color-success-subtle);
+}
+.helf-day__item--skipped {
+  opacity: 0.55;
+  text-decoration: line-through;
+}
+
+.helf-day__item-emoji {
+  font-size: 12px;
+}
+
+.helf-day__item-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
+.helf-day__item-check {
+  color: var(--helf-color-success);
+  font-weight: var(--helf-weight-bold);
+}
+
+.helf-day__add {
+  border: 1px dashed var(--helf-color-border);
+  background: transparent;
+  border-radius: var(--helf-radius-sm);
+  padding: var(--helf-space-1);
+  font-family: var(--helf-font-sans);
+  font-size: var(--helf-text-xs);
+  color: var(--helf-color-text-muted);
+  cursor: pointer;
+}
+.helf-day__add:hover {
+  border-color: var(--helf-color-primary);
+  color: var(--helf-color-primary);
+}

@@ -1,0 +1,42 @@
+.helf-intensity {
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--helf-radius-full);
+  font-weight: var(--helf-weight-semibold);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.helf-intensity--md {
+  height: 22px;
+  padding: 0 var(--helf-space-3);
+  font-size: var(--helf-text-xs);
+}
+.helf-intensity--sm {
+  height: 18px;
+  padding: 0 var(--helf-space-2);
+  font-size: 11px;
+}
+
+/* Effort ramp: grey → green → brand → amber → red */
+.helf-intensity--recovery {
+  background: var(--helf-color-bg);
+  color: var(--helf-color-text-muted);
+  border: 1px solid var(--helf-color-border);
+}
+.helf-intensity--easy {
+  background: var(--helf-color-success-subtle);
+  color: var(--helf-color-success);
+}
+.helf-intensity--moderate {
+  background: var(--helf-color-primary-subtle);
+  color: var(--helf-color-primary);
+}
+.helf-intensity--hard {
+  background: var(--helf-color-warning-subtle);
+  color: var(--helf-color-warning);
+}
+.helf-intensity--max {
+  background: var(--helf-color-danger-subtle);
+  color: var(--helf-color-danger);
+}

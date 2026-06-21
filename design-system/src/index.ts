@@ -25,10 +25,34 @@ export type {
 } from './components/SleepStagesBar/SleepStagesBar';
 
 export { ReadinessBanner } from './components/ReadinessBanner/ReadinessBanner';
-export type {
-  ReadinessBannerProps,
-  ReadinessStatus,
-} from './components/ReadinessBanner/ReadinessBanner';
+export type { ReadinessBannerProps } from './components/ReadinessBanner/ReadinessBanner';
 
+// ── Planning ──────────────────────────────────────────────────────────────────
+export { IntensityPill } from './components/IntensityPill/IntensityPill';
+export type { IntensityPillProps } from './components/IntensityPill/IntensityPill';
+
+export { SportIcon, sportEmoji } from './components/SportIcon/SportIcon';
+export type { SportIconProps } from './components/SportIcon/SportIcon';
+
+export { WorkoutCard } from './components/WorkoutCard/WorkoutCard';
+export type { WorkoutCardProps } from './components/WorkoutCard/WorkoutCard';
+
+export { TemplateChip } from './components/TemplateChip/TemplateChip';
+export type { TemplateChipProps } from './components/TemplateChip/TemplateChip';
+
+export { QuickAddInput } from './components/QuickAddInput/QuickAddInput';
+export type { QuickAddInputProps, QuickAddParsed } from './components/QuickAddInput/QuickAddInput';
+
+export { CalendarDayCell } from './components/CalendarDayCell/CalendarDayCell';
+export type { CalendarDayCellProps, DayCellItem } from './components/CalendarDayCell/CalendarDayCell';
+
+export { CalendarWeek } from './components/CalendarWeek/CalendarWeek';
+export type { CalendarWeekProps, CalendarWeekDay } from './components/CalendarWeek/CalendarWeek';
+
+export { TodayPanel } from './components/TodayPanel/TodayPanel';
+export type { TodayPanelProps, TodayAdjustment } from './components/TodayPanel/TodayPanel';
+
+// ── Shared types & tokens ─────────────────────────────────────────────────────
+export type { Intensity, WorkoutStatus, ReadinessStatus, DayAction } from './types';
 export { tokens, toneForScore } from './tokens/tokens';
 export type { Tone } from './tokens/tokens';

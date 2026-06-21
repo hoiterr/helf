@@ -89,3 +89,10 @@ export function evaluateReadiness(input: ReadinessInputs): ReadinessResult {
 
   return { status, messages };
 }
+
+/** Map a 0–100 recovery/readiness score to a status band (for calendar day tinting). */
+export function bandForScore(score: number): ReadinessStatus {
+  if (score < RECOVERY_RED) return 'RED';
+  if (score < RECOVERY_AMBER) return 'AMBER';
+  return 'GREEN';
+}

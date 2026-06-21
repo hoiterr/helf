@@ -11,6 +11,8 @@ import { SyncModule } from './sync/sync.module';
 import { IntegrationsModule } from './integrations/integrations.module';
 import { UsersModule } from './users/users.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { PlanningModule } from './planning/planning.module';
+import { CalendarModule } from './calendar/calendar.module';
 import { HealthController } from './health/health.controller';
 
 @Module({
@@ -26,6 +28,8 @@ import { HealthController } from './health/health.controller';
     IntegrationsModule,
     UsersModule,
     DashboardModule,
+    PlanningModule,
+    CalendarModule,
   ],
   controllers: [HealthController],
 })

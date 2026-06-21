@@ -1,0 +1,13 @@
+.helf-sport {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.helf-sport--chip {
+  background: var(--helf-color-bg);
+  border: 1px solid var(--helf-color-border);
+  border-radius: var(--helf-radius-full);
+}

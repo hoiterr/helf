@@ -1,0 +1,118 @@
+.helf-today {
+  display: flex;
+  flex-direction: column;
+  gap: var(--helf-space-5);
+  padding: var(--helf-space-5);
+  background: var(--helf-color-surface);
+  border: 1px solid var(--helf-color-border);
+  border-radius: var(--helf-radius-lg);
+  box-shadow: var(--helf-shadow-sm);
+  border-top: 4px solid var(--helf-color-border);
+}
+.helf-today--green {
+  border-top-color: var(--helf-color-success);
+}
+.helf-today--amber {
+  border-top-color: var(--helf-color-warning);
+}
+.helf-today--red {
+  border-top-color: var(--helf-color-danger);
+}
+
+.helf-today__head {
+  display: flex;
+  align-items: center;
+  gap: var(--helf-space-5);
+}
+
+.helf-today__gauge {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+}
+
+.helf-today__intro {
+  min-width: 0;
+}
+
+.helf-today__headline {
+  margin: 0;
+  font-size: var(--helf-text-lg);
+  font-weight: var(--helf-weight-semibold);
+  color: var(--helf-color-text);
+}
+
+.helf-today__reasons {
+  margin: var(--helf-space-2) 0 0;
+  padding-left: var(--helf-space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--helf-space-1);
+  font-size: var(--helf-text-sm);
+  color: var(--helf-color-text-muted);
+}
+
+.helf-today__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--helf-space-3);
+}
+
+.helf-today__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--helf-space-4);
+  padding: var(--helf-space-4);
+  background: var(--helf-color-bg);
+  border: 1px solid var(--helf-color-border);
+  border-radius: var(--helf-radius-md);
+}
+
+.helf-today__item-info {
+  min-width: 0;
+}
+
+.helf-today__item-title {
+  font-weight: var(--helf-weight-semibold);
+  font-size: var(--helf-text-md);
+  color: var(--helf-color-text);
+}
+
+.helf-today__item-pills {
+  display: flex;
+  align-items: center;
+  gap: var(--helf-space-2);
+  margin-top: var(--helf-space-2);
+}
+
+.helf-today__arrow {
+  color: var(--helf-color-text-muted);
+}
+
+.helf-today__suggestion {
+  margin: var(--helf-space-2) 0 0;
+  font-size: var(--helf-text-sm);
+  color: var(--helf-color-text-muted);
+}
+
+.helf-today__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--helf-space-2);
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .helf-today__head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .helf-today__item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .helf-today__actions {
+    width: 100%;
+  }
+}

@@ -1,0 +1,47 @@
+.helf-tchip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--helf-space-2);
+  height: 36px;
+  padding: 0 var(--helf-space-2) 0 var(--helf-space-2);
+  background: var(--helf-color-surface);
+  border: 1px solid var(--helf-color-border);
+  border-radius: var(--helf-radius-full);
+  font-family: var(--helf-font-sans);
+  font-size: var(--helf-text-sm);
+  color: var(--helf-color-text);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.helf-tchip:hover {
+  border-color: var(--helf-color-primary);
+  background: var(--helf-color-primary-subtle);
+}
+
+.helf-tchip__title {
+  font-weight: var(--helf-weight-medium);
+  white-space: nowrap;
+}
+
+.helf-tchip__meta {
+  color: var(--helf-color-text-muted);
+  font-size: var(--helf-text-xs);
+}
+
+.helf-tchip__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--helf-radius-full);
+}
+
+.helf-tchip__add {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--helf-radius-full);
+  background: var(--helf-color-bg);
+  color: var(--helf-color-primary);
+  font-weight: var(--helf-weight-bold);
+}

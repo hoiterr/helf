@@ -1,0 +1,12 @@
+.helf-week {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: var(--helf-space-2);
+}
+
+/* Collapse to a scrollable/stacked layout on narrow screens. */
+@media (max-width: 720px) {
+  .helf-week {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
