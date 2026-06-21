@@ -1,0 +1,212 @@
+// helf — canonical health-data schema
+//
+// Design principle: every external provider (Whoop, Oura, Polar, Garmin-later…)
+// is normalized INTO these tables. Product/analytics code reads only from here
+// and never knows or cares which device the data came from. Adding a provider =
+// implementing a normalizer that writes these rows; it changes nothing downstream.
+//
+// Every metric row carries:
+//   - `source`      which provider it came from (for provenance / de-dup priority)
+//   - `externalId`  the provider's id for the record (idempotent upserts)
+//   - `raw`         the original payload (audit / re-normalization without re-fetch)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ── Providers ─────────────────────────────────────────────────────────────────
+
+enum Provider {
+  WHOOP
+  OURA
+  POLAR
+  WITHINGS
+  EIGHT_SLEEP
+  GARMIN // reached via aggregator until Garmin's direct program reopens
+  STRAVA
+  DEXCOM
+}
+
+enum ConnectionStatus {
+  ACTIVE
+  EXPIRED // refresh token invalid / user must re-consent
+  REVOKED // user disconnected
+  ERROR
+}
+
+// ── Core ──────────────────────────────────────────────────────────────────────
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String?
+  timezone  String   @default("UTC")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  connections    ProviderConnection[]
+  sleepSessions  SleepSession[]
+  recoveries     DailyRecovery[]
+  workouts       Workout[]
+  dailySummaries DailySummary[]
+  hrvSamples     HrvSample[]
+}
+
+/// A user's linked account at one provider. Holds the OAuth tokens (encrypted at
+/// rest) and the provider-side user id used to match incoming webhooks.
+model ProviderConnection {
+  id             String           @id @default(uuid())
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String
+  provider       Provider
+  status         ConnectionStatus @default(ACTIVE)
+  // Provider's own id for this user (webhooks reference this, not our userId)
+  externalUserId String?
+  scopes         String[]         @default([])
+  // Tokens are AES-256-GCM encrypted blobs — never stored in plaintext.
+  accessToken    String?
+  refreshToken   String?
+  tokenExpiresAt DateTime?
+  lastSyncedAt   DateTime?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  @@unique([userId, provider])
+  @@index([provider, externalUserId])
+}
+
+// ── Canonical metrics ─────────────────────────────────────────────────────────
+
+/// One night of sleep, normalized across providers.
+model SleepSession {
+  id       String   @id @default(uuid())
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId   String
+  source   Provider
+  externalId String
+
+  start            DateTime
+  end              DateTime
+  timezoneOffset   Int? // minutes from UTC at time of record
+  totalSleepMin    Int?
+  timeInBedMin     Int?
+  efficiencyPct    Float?
+  // Stage breakdown (minutes) — null where a provider doesn't report it
+  lightMin         Int?
+  deepMin          Int?
+  remMin           Int?
+  awakeMin         Int?
+  // Physiology captured during the session
+  avgHeartRate     Float?
+  avgHrvRmssd      Float?
+  respiratoryRate  Float?
+  // Provider's own 0-100 sleep score, if any
+  sleepScore       Float?
+
+  raw       Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([source, externalId])
+  @@index([userId, start])
+}
+
+/// Daily recovery / readiness snapshot — the morning "how ready am I" metrics.
+/// This is the cross-device unification of Whoop Recovery, Oura Readiness, etc.
+model DailyRecovery {
+  id     String   @id @default(uuid())
+  user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  source Provider
+  externalId String
+
+  /// Calendar day this recovery applies to (local date, normalized to UTC midnight)
+  date            DateTime
+  /// Provider's headline 0-100 recovery/readiness score
+  score           Float?
+  restingHeartRate Float?
+  hrvRmssd        Float?
+  spo2Pct         Float?
+  skinTempCelsius Float?
+  respiratoryRate Float?
+
+  raw       Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([source, externalId])
+  @@unique([userId, source, date])
+  @@index([userId, date])
+}
+
+/// A workout / activity. `strain` and `load` are provider-specific effort scores;
+/// we also derive our own training-load (see analytics layer) from these + HR.
+model Workout {
+  id     String   @id @default(uuid())
+  user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  source Provider
+  externalId String
+
+  sportType    String?
+  start        DateTime
+  end          DateTime
+  durationMin  Float?
+  avgHeartRate Float?
+  maxHeartRate Float?
+  calories     Float?
+  distanceMeters Float?
+  /// Provider effort scores (e.g. Whoop strain 0-21)
+  strain       Float?
+  load         Float?
+
+  raw       Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([source, externalId])
+  @@index([userId, start])
+}
+
+/// Daily rollup of all-day metrics (steps, calories, resting HR). One row per
+/// user/source/day; useful for trend charts without scanning intraday samples.
+model DailySummary {
+  id     String   @id @default(uuid())
+  user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  source Provider
+
+  date             DateTime
+  steps            Int?
+  activeCalories   Float?
+  totalCalories    Float?
+  restingHeartRate Float?
+  avgStressLevel   Float?
+
+  raw       Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, source, date])
+  @@index([userId, date])
+}
+
+/// Optional high-resolution HRV samples (e.g. Oura's 5-min nightly intervals).
+/// Kept separate from SleepSession because it's high-volume time-series data.
+model HrvSample {
+  id     String   @id @default(uuid())
+  user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  source Provider
+
+  recordedAt DateTime
+  rmssd      Float
+
+  @@unique([userId, source, recordedAt])
+  @@index([userId, recordedAt])
+}
